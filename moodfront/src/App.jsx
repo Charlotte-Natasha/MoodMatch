@@ -1,44 +1,47 @@
+// App.jsx
 import React from 'react';
-// 1. Import Router Components
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 
-// 2. Import Your Page Components
-// Note: Rename 'Screen' to 'WelcomeScreen' or 'OnboardingScreen' for clarity
-import WelcomeScreen from './components/WelcomeScreen'; 
-import Moods from './components/Moods'; 
-import Playlist from './components/Playlist';
+// Main Pages
+import WelcomeScreen from './components/WelcomeScreen';
+import Moods from './components/Moods';
 import History from './components/History';
 import Player from './components/Player';
 import Profile from './components/Profile';
 
-// A Layout or Navbar component is often wrapped around pages that share elements
-// import Layout from './components/Layout'; 
+// Individual Mood Pages
+import ChillPage from './components/MoodPage/Chill.jsx';
+import EnergeticPage from './components/MoodPage/Energetic.jsx';
+import FocusedPage from './components/MoodPage/Focused.jsx';
+import HappyPage from './components/MoodPage/Happy.jsx';
+import RomanticPage from './components/MoodPage/Romantic.jsx';
+import SadPage from './components/MoodPage/Sad.jsx';
 
 function App() {
   return (
-    // The Router component is the heart of the navigation system
     <Router>
-      {/* Routes define the paths for your application */}
       <Routes>
-        
-        {/* 1. Welcome / Onboarding (The entry point) */}
+        {/* Welcome / Onboarding */}
         <Route path="/" element={<WelcomeScreen />} />
-        
-        {/* 2. Mood Selection Screen (After clicking 'Get Started') */}
-        <Route path="/moods" element={<Moods />} />
 
-        {/* 3. Playlist Recommendation Screen */}
-        <Route path="/playlists/:moodId" element={<Playlist />} />
+        {/* Mood Selection Grid */}
+        <Route path="/moods-select" element={<Moods />} />
 
-        {/* 4. Now Playing Screen (Often a modal or separate full screen) */}
-        <Route path="/player" element={<Player />} /> 
+        {/* Redirect /mood to /moods-select */}
+        <Route path="/mood" element={<Navigate to="/moods-select" replace />} />
 
-        {/* 5. Optional: Saved Moods / Favorites (Could be handled by History or Profile) */}
+        {/* Individual Mood Pages */}
+        <Route path="/mood/chill" element={<ChillPage />} />
+        <Route path="/mood/energetic" element={<EnergeticPage />} />
+        <Route path="/mood/focused" element={<FocusedPage />} />
+        <Route path="/mood/happy" element={<HappyPage />} />
+        <Route path="/mood/romantic" element={<RomanticPage />} />
+        <Route path="/mood/sad" element={<SadPage />} />
+
+        {/* Other App Screens */}
+        <Route path="/player" element={<Player />} />
         <Route path="/history" element={<History />} />
         <Route path="/profile" element={<Profile />} />
-        
-        {/* Optional: 404 Page */}
-        {/* <Route path="*" element={<NotFound />} /> */}
       </Routes>
     </Router>
   );
