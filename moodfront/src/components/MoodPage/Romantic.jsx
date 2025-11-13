@@ -1,10 +1,15 @@
-import React from "react";
+import React from 'react';
+import MoodPage from './MoodPage.jsx';
+import romanticImage from '../../assets/Romance.png';
 
 const Romantic = () => {
   return (
-    <div className="player-card">   
-        <h3 className="track-name">Tracks</h3>
-    </div>
+    <MoodPage
+      moodName="Romance"
+      bgColorVar="--color-mood-romantic"
+      moodImage={romanticImage}
+    />
   );
-}   
+};
+
 export default Romantic;

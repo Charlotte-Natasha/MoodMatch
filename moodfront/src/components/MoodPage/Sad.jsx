@@ -1,10 +1,14 @@
-import React from "react";
+import React from 'react';
+import MoodPage from './MoodPage.jsx';
+import happyImage from '../../assets/Sad.png';
 
-const Sad = () => {
-  return (
-    <div className="player-card">   
-        <h3 className="track-name">Tracks</h3>
-    </div>
-  );
-}   
-export default Sad;
+const HappyPage = () => (
+  <MoodPage
+    moodName="Sad"
+    bgColorVar="--color-mood-sad"
+    playlistCount={12}
+    moodImage={happyImage}
+  />
+);
+
+export default HappyPage;

@@ -1,10 +1,15 @@
-import React from "react";
+import React from 'react';
+import MoodPage from './MoodPage.jsx';
+import focusedImage from '../../assets/Focused.png';
 
 const Focused = () => {
   return (
-    <div className="player-card">   
-        <h3 className="track-name">Tracks</h3>
-    </div>
+    <MoodPage
+      moodName="Focused"
+      bgColorVar="--color-mood-focused"
+      moodImage={focusedImage}
+    />
   );
-}   
+};
+
 export default Focused;

@@ -1,11 +1,15 @@
-import React from "react";
+import React from 'react';
+import MoodPage from './MoodPage.jsx';
+import energeticImage from '../../assets/Energetic.png';
 
 const Energetic = () => {
-    return (
-        <div>
-            <h3 className="track-name">Energetic Tracks</h3>
-        </div>
-    );
-}
+  return (
+    <MoodPage
+      moodName="Energetic"
+      bgColorVar="--color-mood-energetic"
+      moodImage={energeticImage}
+    />
+  );
+};
 
 export default Energetic;
