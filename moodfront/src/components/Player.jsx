@@ -1,0 +1,10 @@
+import React from "react";
+
+const Player = () => {
+  return (
+    <div className="player-card">   
+        <h3 className="track-name">Tracks</h3>
+    </div>
+  );
+}   
+export default Player;
