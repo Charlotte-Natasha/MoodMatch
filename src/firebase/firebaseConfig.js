@@ -1,5 +1,5 @@
 import { initializeApp } from 'firebase/app';
-import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from 'firebase/auth';
+import { getAuth, onAuthStateChanged } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 
 const firebaseConfig = {
@@ -14,23 +14,5 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
-
-const initialAuthToken = null; // replace if needed
-
-export const initializeAuth = async () => {
-  try {
-    if (initialAuthToken) {
-      await signInWithCustomToken(auth, initialAuthToken);
-      console.log('Firebase: Signed in with custom token.');
-    } else {
-      await signInAnonymously(auth);
-      console.log('Firebase: Signed in anonymously.');
-    }
-  } catch (error) {
-    console.error('Firebase Authentication Error:', error);
-  }
-};
-
-initializeAuth();
 
 export { auth, db, onAuthStateChanged };

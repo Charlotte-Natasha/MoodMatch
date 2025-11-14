@@ -77,7 +77,7 @@ const Signup = () => { // Renamed to SignupPage for consistency
       console.log('Firebase Sign Up Successful:', userCredential.user.uid);
       
       // 2c. Navigate to the next screen
-      navigate('/moods-select');
+      navigate('/welcome');
 
     } catch (err) {
       console.error('Sign Up Error:', err.code, err.message);
@@ -162,7 +162,7 @@ const Signup = () => { // Renamed to SignupPage for consistency
           
           {/* General Error Message (e.g., Email already in use) */}
           {generalError && (
-            <div className="p-3 mb-4 bg-red-600 text-white rounded-lg text-center font-medium">
+            <div className="p-3 mb-4 bg-purple-600 text-white rounded-lg text-center font-medium">
               {generalError}
             </div>
           )}
@@ -180,7 +180,7 @@ const Signup = () => { // Renamed to SignupPage for consistency
                   onChange={handleChange}
                   // Responsive styles for input fields
                   className={`w-full p-4 rounded-xl bg-white/20 md:bg-white border-2 text-white md:text-gray-900 placeholder-white/70 md:placeholder-gray-400 focus:outline-none transition-all shadow-sm ${
-                    errors[field] ? 'border-red-500' : 'border-gray-200 focus:border-[#2F0222]'
+                    errors[field] ? 'border-purple-500' : 'border-gray-200 focus:border-[#2F0222]'
                   }`}
                 />
                 {errors[field] && <p className="mt-1 text-sm text-red-400 md:text-red-500">{errors[field]}</p>}

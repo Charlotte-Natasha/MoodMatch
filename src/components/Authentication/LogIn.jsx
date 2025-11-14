@@ -47,7 +47,7 @@ const LoginPage = () => {
       // For example, you can set Firebase auth persistence based on rememberMe flag if desired
 
       // On success, navigate to moods-select page
-      navigate('/moods-select');
+      navigate('/welcome');
     } catch (err) {
       // Map Firebase auth errors to user-friendly messages
       if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
@@ -92,7 +92,7 @@ const LoginPage = () => {
           <p className="text-gray-600 text-lg mb-6">Sign in to continue your music journey</p>
 
           {generalError && (
-            <div className="p-3 mb-4 bg-red-600 text-white rounded-lg text-center font-medium">
+            <div className="p-3 mb-4 bg-purple-600 text-white rounded-lg text-center font-medium">
               {generalError}
             </div>
           )}
@@ -107,10 +107,10 @@ const LoginPage = () => {
                 value={formData.email}
                 onChange={handleChange}
                 className={`w-full p-4 rounded-xl bg-white border-2 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm ${
-                  errors.email ? 'border-red-500' : 'border-gray-200 focus:border-[#2F0222]'
+                  errors.email ? 'border-purple-500' : 'border-gray-200 focus:border-[#2F0222]'
                 }`}
               />
-              {errors.email && <p className="mt-1 text-sm text-red-500">{errors.email}</p>}
+              {errors.email && <p className="mt-1 text-sm text-purple-500">{errors.email}</p>}
             </div>
 
             {/* Password */}
@@ -122,10 +122,10 @@ const LoginPage = () => {
                 value={formData.password}
                 onChange={handleChange}
                 className={`w-full p-4 rounded-xl bg-white border-2 text-gray-900 placeholder-gray-400 focus:outline-none transition-all shadow-sm ${
-                  errors.password ? 'border-red-500' : 'border-gray-200 focus:border-[#2F0222]'
+                  errors.password ? 'border-purple-500' : 'border-gray-200 focus:border-[#2F0222]'
                 }`}
               />
-              {errors.password && <p className="mt-1 text-sm text-red-500">{errors.password}</p>}
+              {errors.password && <p className="mt-1 text-sm text-purple-500">{errors.password}</p>}
             </div>
 
             {/* Remember Me & Forgot Password */}

@@ -6,11 +6,11 @@ import SignUp from './components/Authentication/SignUp.jsx';
 import LogIn from './components/Authentication/LogIn.jsx';
 
 // Main Pages
-import WelcomeScreen from './components/WelcomeScreen.jsx';
-import Moods from './components/Moods.jsx';
+import WelcomeScreen from './pages/WelcomeScreen.jsx';
+import Moods from './pages/Moods.jsx';
 import History from './components/History.jsx';
 import Player from './components/Player.jsx';
-import Profile from './components/Profile.jsx';
+import Profile from './pages/Profile.jsx';
 
 // Mood Pages
 import ChillPage from './components/MoodPage/Chill.jsx';

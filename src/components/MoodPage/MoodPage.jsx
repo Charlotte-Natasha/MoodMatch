@@ -1,7 +1,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
-import { useFavorites } from "../hooks/useFavorites";
-import { useFetchPlaylists } from "../hooks/useFetchPlaylists";
+import { useFavorites } from "../../hooks/useFavorites";
+import { useFetchPlaylists } from "../../hooks/useFetchPlaylists";
 import { FaHeart, FaRegHeart } from "react-icons/fa";
 
 // Renaming prop back to bgColorVar for compatibility with CSS variable usage
