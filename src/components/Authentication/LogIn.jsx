@@ -1,17 +1,23 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 
+// Import Firebase auth and signInWithEmailAndPassword
+import { signInWithEmailAndPassword } from 'firebase/auth';
+import { auth } from '../../firebase/firebaseConfig'; // Adjust the path to your Firebase config export
+
 const LoginPage = () => {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({ email: '', password: '' });
   const [errors, setErrors] = useState({});
   const [isLoading, setIsLoading] = useState(false);
+  const [generalError, setGeneralError] = useState('');
   const [rememberMe, setRememberMe] = useState(false);
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     if (errors[e.target.name]) setErrors({ ...errors, [e.target.name]: '' });
+    setGeneralError('');
   };
 
   const validateForm = () => {
@@ -22,20 +28,39 @@ const LoginPage = () => {
     return newErrors;
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     const newErrors = validateForm();
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
     }
-    setIsLoading(true);
 
-    setTimeout(() => {
-      console.log('Login:', formData, 'Remember me:', rememberMe);
-      setIsLoading(false);
+    setIsLoading(true);
+    setGeneralError('');
+    
+    try {
+      // Firebase sign in
+      await signInWithEmailAndPassword(auth, formData.email, formData.password);
+
+      // Handle remember me: (optional, can set persistence here if needed)
+      // For example, you can set Firebase auth persistence based on rememberMe flag if desired
+
+      // On success, navigate to moods-select page
       navigate('/moods-select');
-    }, 1500);
+    } catch (err) {
+      // Map Firebase auth errors to user-friendly messages
+      if (err.code === 'auth/user-not-found' || err.code === 'auth/wrong-password') {
+        setGeneralError('Invalid email or password.');
+      } else if (err.code === 'auth/user-disabled') {
+        setGeneralError('User account has been disabled.');
+      } else {
+        setGeneralError('Login failed. Please try again later.');
+      }
+      console.error('Login error:', err.code, err.message);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleSignUp = () => navigate('/signup');
@@ -44,9 +69,12 @@ const LoginPage = () => {
   return (
     <div className="min-h-screen flex flex-col md:flex-row">
       {/* Left Branding */}
-      <div className="md:w-1/2 text-white flex flex-col items-center justify-center p-10 md:p-16 relative overflow-hidden" style={{
-          background: 'linear-gradient(135deg, #2F0222 0%, #4B0B3E 50%, #6B1556 100%)'
-        }}>
+      <div
+        className="hidden md:flex md:w-1/2 text-white flex-col items-center justify-center p-10 md:p-16 relative overflow-hidden"
+        style={{
+          background: 'linear-gradient(135deg, #2F0222 0%, #4B0B3E 50%, #6B1556 100%)',
+        }}
+      >
         <div className="absolute top-10 left-10 w-32 h-32 bg-white/10 rounded-full blur-3xl"></div>
         <div className="absolute bottom-20 right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl"></div>
 
@@ -59,11 +87,15 @@ const LoginPage = () => {
 
       {/* Right Login Form */}
       <div className="md:w-1/2 flex items-center justify-center p-8 md:p-12 relative bg-gray-100">
-        <div className="absolute top-0 left-0 w-full h-2 bg-linear-to-r from-purple-800 to-pink-700"></div>
-
         <div className="w-full max-w-md">
           <h2 className="text-3xl md:text-4xl font-bold mb-2 text-gray-900">Welcome Back</h2>
           <p className="text-gray-600 text-lg mb-6">Sign in to continue your music journey</p>
+
+          {generalError && (
+            <div className="p-3 mb-4 bg-red-600 text-white rounded-lg text-center font-medium">
+              {generalError}
+            </div>
+          )}
 
           <form className="space-y-5" onSubmit={handleSubmit}>
             {/* Email */}
@@ -118,14 +150,13 @@ const LoginPage = () => {
               </button>
             </div>
 
-            {/* Custom Gradient Button */}
+            {/* Submit Button */}
             <button
               type="submit"
               disabled={isLoading}
               className="w-full h-14 rounded-md text-white text-lg font-semibold relative overflow-hidden"
             >
-              <div className="absolute inset-0 z-0 button-gradient-bg"></div>
-              <span className="relative z-10">{isLoading ? 'Signing in…' : 'Sign In'}</span>
+              <span>{isLoading ? 'Signing in…' : 'Sign In'}</span>
             </button>
           </form>
 
