@@ -13,3 +13,11 @@ src/contexts/AuthContext.js — Wraps your app and provides authenticated user s
 src/firebase/firebaseConfig.js — Firebase app initialization with config.
 
 src/assets/ — All your images like happy/sad.
+
+
+
+✅ OAuth 2.0 (Spotify authentication)
+✅ Spotify Web API (music playback & search)
+✅ Firebase Firestore (user data persistence)
+✅ React Context (state management)
+✅ Protected Routes (authentication flow)"

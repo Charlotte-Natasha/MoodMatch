@@ -31,10 +31,10 @@ const ProfileIcon = () => {
           <img
             src={currentUser.photoURL}
             alt="Profile"
-            className="w-8 h-8 rounded-full object-cover"
+            className="w-15 h-15 rounded-full object-cover"
           />
         ) : (
-          <div className="w-20 h-20 rounded-full bg-pink-600 flex items-center justify-center text-white text-sm font-bold">
+          <div className="w-15 h-15 rounded-full bg-pink-600 flex items-center justify-center text-white text-sm font-bold">
             {getInitials(currentUser.displayName || currentUser.email)}
           </div>
         )
