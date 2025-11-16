@@ -149,7 +149,7 @@ const Profile = () => {
                     className="w-24 h-24 rounded-full object-cover border-4 border-white shadow-xl mx-auto"
                   />
                 ) : (
-                  <div className="w-24 h-24 rounded-full bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-xl mx-auto">
+                  <div className="w-24 h-24 rounded-full bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-4xl font-bold border-4 border-white shadow-xl mx-auto">
                     {getInitials(user.display_name || user.email)}
                   </div>
                 )}

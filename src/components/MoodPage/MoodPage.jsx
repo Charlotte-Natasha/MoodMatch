@@ -14,16 +14,17 @@ const MoodPage = ({
     // Set background style using the variable
     const moodStyle = { backgroundColor: `var(${bgColorVar})` };
 
-    // --- NEW: Handler for clicking a playlist card ---
-    // This function will navigate the user to a specific playlist detail route.
+    // Handler for clicking a playlist card
     const handlePlaylistClick = (playlistId) => {
-        // Assuming your route for a specific playlist is '/playlist/:id'
-        navigate(`/playlist/${playlistId}`);
+        // FIXED: Now passes the background color to PlaylistDetail
+        navigate(`/playlist/${playlistId}`, {
+            state: { 
+                bgColorVar: bgColorVar  // Pass the mood color
+            }
+        });
     };
-    // -------------------------------------------------
 
     if (loading || error) {
-        // ... (loading/error state logic remains the same)
         return (
             <div style={moodStyle} className="p-8 text-center min-h-screen">
                 {loading ? "Loading..." : "Error!"}
@@ -36,12 +37,13 @@ const MoodPage = ({
     return (
         <div style={moodStyle} className="p-8 min-h-screen">
             <header className="flex items-center justify-between mb-8">
-                {/* Back Button remains the same */}
                 <button
                     onClick={() => navigate('/moods-select')}
                     className="flex items-center text-white p-2 rounded-lg bg-black/20 hover:bg-black/40 transition-colors"
                 >
-                    {/* ... SVG ... */}
+                    <svg className="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                    </svg>
                     Back to Moods
                 </button>
                 
@@ -58,12 +60,8 @@ const MoodPage = ({
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
                 {playlists && playlists.map(playlist => (
-                    // ---------------------------------------------------
-                    // KEY CHANGE: Add onClick handler to the playlist div
-                    // ---------------------------------------------------
                     <div 
                         key={playlist.id} 
-                        // Call the handler, passing the playlist's ID
                         onClick={() => handlePlaylistClick(playlist.id)} 
                         className="bg-white/10 p-4 rounded-lg cursor-pointer hover:bg-white/20 transition-colors"
                     >
