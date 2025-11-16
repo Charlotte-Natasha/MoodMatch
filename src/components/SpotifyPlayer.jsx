@@ -61,7 +61,6 @@ function SpotifyPlayer({ accessToken, playlistUri }) {
     }
   }, [deviceId, playlistUri, accessToken]);
 
-  return <div>Spotify Player Initialized</div>;
 }
 
 export default SpotifyPlayer;
