@@ -12,7 +12,11 @@ export async function fetchPlaylistsByMood(mood) {
     try {
         const token = await getValidAccessToken(); // Uses user token now!
 
-        const query = `${mood}`;
+        // Add variety words to get different results each time
+        const varietyWords = ['vibes', 'hits', 'mix', 'best', 'top', 'new', 'songs', 'music', 'sexy', 'chill', 'party', 'workout'];
+        const randomWord = varietyWords[Math.floor(Math.random() * varietyWords.length)];
+
+        const query = `${mood} ${randomWord}`.trim().replace(/\s+/g, '+');
         const API_SEARCH_URL = `${SPOTIFY_API_BASE}/search?q=${query}&type=playlist&limit=20`;
 
         const response = await fetch(API_SEARCH_URL, {
@@ -29,27 +33,26 @@ export async function fetchPlaylistsByMood(mood) {
 
         const data = await response.json();
 
-        return data.playlists.items
+// Shuffle and take only 20 playlists
+        const playlists = data.playlists.items
             .map((item) => {
-                if (!item || !item.id) {
-                    return null;
-                }
+                if (!item || !item.id) return null;
 
-                const imageUrl =
-                    item.images && item.images.length > 0
-                        ? item.images[0].url
-                        : null;
+                const imageUrl = item.images?.[0]?.url || null;
 
                 return {
                     id: item.id,
                     name: item.name || "[Untitled Playlist]",
                     description: item.description,
                     imageUrl: imageUrl,
-                    owner: item.owner ? item.owner.display_name : "[Unknown Owner]",
+                    owner: item.owner?.display_name || "[Unknown Owner]",
                     uri: item.uri,
                 };
             })
             .filter((item) => item !== null);
+
+        // Shuffle the results
+        return shuffleArray(playlists).slice(0, 20);
     } catch (error) {
         console.error("Error fetching playlists:", error);
         throw error;
@@ -323,5 +326,51 @@ export async function setVolume(volumePercent) {
     } catch (error) {
         console.error('Error setting volume:', error);
         throw error;
+    }
+}
+
+// Add this helper function at the bottom of MusicService.js
+function shuffleArray(array) {
+    const shuffled = [...array];
+    for (let i = shuffled.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+}
+
+/**
+ * Get recently played tracks from Spotify
+ */
+export async function getRecentlyPlayed(limitCount = 50) {
+    try {
+        const token = await getValidAccessToken();
+
+        const response = await fetch(
+            `${SPOTIFY_API_BASE}/me/player/recently-played?limit=${limitCount}`,
+            {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                }
+            }
+        );
+
+        if (!response.ok) {
+            throw new Error('Failed to get recently played');
+        }
+
+        const data = await response.json();
+        
+        return data.items.map(item => ({
+            trackName: item.track.name,
+            artist: item.track.artists.map(a => a.name).join(', '),
+            album: item.track.album.name,
+            albumImage: item.track.album.images?.[0]?.url,
+            playedAt: item.played_at,
+            uri: item.track.uri
+        }));
+    } catch (error) {
+        console.error('Error getting recently played:', error);
+        return [];
     }
 }

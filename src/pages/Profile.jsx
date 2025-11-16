@@ -6,9 +6,11 @@ import {
   FaClock,
   FaChartLine,
   FaSpotify,
+  FaHeart
 } from "react-icons/fa";
 
 import { getCurrentUser, logout } from "../services/SpotifyAuth";
+import { getMoodStats } from "../firebase/firebaseTracking";
 
 // ---------------- MoodBar Component -----------------
 const MoodBar = ({ mood, icon, colorVar, plays, maxPlays }) => {
@@ -44,33 +46,45 @@ const Profile = () => {
 
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [moodStats, setMoodStats] = useState([]); // FIX: ADD THIS LINE
 
-  // You can keep these mock stats for now or remove them
-  const MOCK_STATS = [
-    { name: "Songs Played", icon: FaMusic, value: 247 },
-    { name: "Hours Streamed", icon: FaClock, value: 58.5 },
-  ];
+  // Mood emoji mapping
+  const MOOD_EMOJIS = {
+    happy: '😊',
+    sad: '😢',
+    chill: '😌',
+    energetic: '⚡',
+    focused: '🎯',
+    romantic: '💕',
+  };
 
-  const MOCK_TOP_MOODS = [
-    { mood: "Happy", icon: "😄", plays: 89, colorVar: "--color-mood-happy" },
-    { mood: "Chill", icon: "😌", plays: 67, colorVar: "--color-mood-chill" },
-    { mood: "Energetic", icon: "⚡", plays: 45, colorVar: "--color-mood-energetic" },
-  ];
+  const MOOD_COLORS = {
+    happy: '--color-mood-happy',
+    sad: '--color-mood-sad',
+    chill: '--color-mood-chill',
+    energetic: '--color-mood-energetic',
+    focused: '--color-mood-focused',
+    romantic: '--color-mood-romantic',
+  };
 
-  // Load Spotify User
+  // FIX: Only ONE useEffect
   useEffect(() => {
-    const loadUser = async () => {
+    const loadData = async () => {
       try {
         const spotifyUser = await getCurrentUser();
         setUser(spotifyUser);
+        
+        // Load mood statistics from Firebase
+        const stats = await getMoodStats();
+        setMoodStats(stats);
       } catch (err) {
-        console.error("Error loading user:", err);
+        console.error("Error loading data:", err);
       } finally {
         setLoading(false);
       }
     };
 
-    loadUser();
+    loadData();
   }, []);
 
   const getInitials = (name) => {
@@ -88,6 +102,11 @@ const Profile = () => {
     logout();
     navigate("/");
   };
+
+  // FIX: Calculate maxPlays AFTER moodStats is loaded
+  const maxPlays = moodStats.length > 0 
+    ? Math.max(...moodStats.map(m => m.count)) 
+    : 1;
 
   if (loading) {
     return (
@@ -134,7 +153,7 @@ const Profile = () => {
       {/* MAIN GRID */}
       <main className="grid grid-cols-1 lg:grid-cols-3 gap-6 max-w-7xl mx-auto">
 
-        {/* LEFT COLUMN */}
+        {/* LEFT COLUMN - KEEP AS IS */}
         <div className="lg:col-span-1 space-y-6">
           <div className="bg-white/10 p-6 rounded-xl shadow-lg backdrop-blur-md">
             
@@ -154,7 +173,6 @@ const Profile = () => {
                   </div>
                 )}
 
-                {/* Spotify Badge */}
                 {user.product === 'premium' && (
                   <div className="absolute bottom-0 right-0 p-2 bg-green-500 rounded-full text-white shadow-md">
                     <FaSpotify className="w-3 h-3" />
@@ -170,7 +188,6 @@ const Profile = () => {
                 {user.email}
               </p>
 
-              {/* Premium Badge */}
               {user.product === 'premium' ? (
                 <span className="mt-3 px-4 py-1 bg-green-500/20 text-green-400 rounded-full text-sm font-medium">
                   ✓ Spotify Premium
@@ -204,7 +221,6 @@ const Profile = () => {
               </div>
             </div>
 
-            {/* Spotify Info */}
             <div className="pt-6 border-t border-white/20">
               <h3 className="text-sm font-semibold mb-2 opacity-70">Spotify ID</h3>
               <p className="text-xs font-mono bg-white/5 p-2 rounded break-all">{user.id}</p>
@@ -215,20 +231,35 @@ const Profile = () => {
         {/* RIGHT COLUMN */}
         <div className="lg:col-span-2 space-y-6">
 
-          {/* Top Moods (Mock - can be replaced with real data later) */}
+          {/* Top Moods */}
           <div className="bg-white/10 p-6 rounded-xl shadow-lg backdrop-blur-md">
             <h3 className="text-xl font-bold mb-5 flex items-center space-x-2">
               <FaChartLine className="w-5 h-5 text-pink-400" />
               <span>Your Top Moods</span>
             </h3>
 
-            <p className="text-sm opacity-70 mb-4">
-              Coming soon! Track your listening habits across different moods.
-            </p>
+            {moodStats.length === 0 ? (
+              <p className="text-sm opacity-70 mb-4">
+                Start listening to music to see your mood statistics!
+              </p>
+            ) : (
+              <>
+                <p className="text-sm opacity-70 mb-4">
+                  Based on {moodStats.reduce((sum, m) => sum + m.count, 0)} plays
+                </p>
 
-            {MOCK_TOP_MOODS.map((mood) => (
-              <MoodBar key={mood.mood} {...mood} maxPlays={100} />
-            ))}
+                {moodStats.slice(0, 5).map((stat) => (
+                  <MoodBar 
+                    key={stat.mood}
+                    mood={stat.mood.charAt(0).toUpperCase() + stat.mood.slice(1)}
+                    icon={MOOD_EMOJIS[stat.mood] || '🎵'}
+                    colorVar={MOOD_COLORS[stat.mood] || '--color-mood-happy'}
+                    plays={stat.count}
+                    maxPlays={maxPlays}
+                  />
+                ))}
+              </>
+            )}
           </div>
 
           {/* Quick Actions */}
@@ -251,6 +282,14 @@ const Profile = () => {
                 <span>Listening History</span>
                 <FaClock className="w-5 h-5" />
               </button>
+
+              <button
+    onClick={() => navigate('/favorites')}
+    className="w-full bg-pink-600 hover:bg-pink-700 text-white font-semibold py-3 px-6 rounded-xl transition-all text-left flex items-center justify-between"
+>
+    <span>My Favorites</span>
+    <FaHeart className="w-5 h-5" />
+</button>
             </div>
           </div>
 
@@ -258,7 +297,7 @@ const Profile = () => {
           <div className="bg-white/10 p-6 rounded-xl shadow-lg backdrop-blur-md">
             <h3 className="text-xl font-bold mb-5">Account</h3>
             <button
-              className="w-full bg-red-500/20 hover:bg-red-500/30 text-red-400 font-semibold py-3 px-6 rounded-xl transition-all border border-red-500/30"
+              className="w-full bg-purple-500/20 hover:purple-red-500/30 text-white-400 font-semibold py-3 px-6 rounded-xl transition-all border border-purple-500/30"
               onClick={handleLogout} 
             >
               Logout from Spotify
