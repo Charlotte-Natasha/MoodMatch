@@ -1,13 +1,16 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-// Contexts and Hooks
+import { isLoggedIn as isSpotifyConnected } from './services/SpotifyAuth';
+
+// Contexts
 import { PlaybackProvider, usePlayback } from './contexts/PlaybackContext.jsx'; 
+
 // Components
-import PrivateRoute from './components/PrivateRoute.jsx'; 
 import SpotifyPlayer from './components/SpotifyPlayer.jsx'; 
 
-// Authentication Page
+// Authentication Pages
 import SpotifyLoginPage from './pages/SpotifyLogin.jsx';
+import SpotifyCallback from './pages/SpotifyCallback.jsx';
 
 // Main Pages
 import WelcomeScreen from './pages/WelcomeScreen.jsx';
@@ -25,7 +28,17 @@ import FocusedPage from './components/MoodPage/Focused.jsx';
 import RomanticPage from './components/MoodPage/Romantic.jsx';
 
 // -------------------------------------------------------------
-// 1. Content Wrapper (Handles Router and Global Player)
+// Protected Route Component (Replaces PrivateRoute)
+// -------------------------------------------------------------
+function ProtectedRoute({ children }) {
+    if (!isSpotifyConnected()) {
+        return <Navigate to="/spotify-login" replace />;
+    }
+    return children;
+}
+
+// -------------------------------------------------------------
+// Content Wrapper (Handles Router and Global Player)
 // -------------------------------------------------------------
 function AppContent() {
     const { currentUri } = usePlayback(); 
@@ -34,44 +47,135 @@ function AppContent() {
         <Router>
             <Routes>
                 {/* ========================================= */}
-                {/* 📢 PUBLIC ROUTES (No login required)     */}
+                {/* 📢 PUBLIC ROUTES (No Spotify login)      */}
                 {/* ========================================= */}
-                <Route path='/' element={<WelcomeScreen />} />
-                <Route path='/spotify-login' element={<SpotifyLoginPage/>} />
+                <Route 
+                    path='/' 
+                    element={
+                        isSpotifyConnected() 
+                            ? <Navigate to="/moods-select" replace /> 
+                            : <WelcomeScreen />
+                    } 
+                />
+                
+                <Route 
+                    path='/spotify-login' 
+                    element={
+                        isSpotifyConnected() 
+                            ? <Navigate to="/moods-select" replace /> 
+                            : <SpotifyLoginPage />
+                    } 
+                />
+
+                {/* Spotify OAuth Callback */}
+                <Route path="/callback" element={<SpotifyCallback />} />
 
                 {/* ========================================= */}
-                {/* 🔒 PRIVATE ROUTES (Login required)       */}
+                {/* 🔒 PROTECTED ROUTES (Spotify login req)  */}
                 {/* ========================================= */}
-                <Route element={<PrivateRoute />}>
-                    
-                    {/* Welcome & Moods */}
-                    <Route path="/moods-select" element={<Moods />} />
-                    <Route path="/mood" element={<Navigate to="/moods-select" replace />} />
-                    
-                    {/* Individual Mood Pages */}
-                    <Route path="/mood/chill" element={<ChillPage />} />
-                    <Route path="/mood/energetic" element={<EnergeticPage />} />
-                    <Route path="/mood/focused" element={<FocusedPage />} />
-                    <Route path="/mood/happy" element={<HappyPage />} />
-                    <Route path="/mood/romantic" element={<RomanticPage />} />
-                    <Route path="/mood/sad" element={<SadPage />} />
+                
+                {/* Mood Selection */}
+                <Route 
+                    path="/moods-select" 
+                    element={
+                        <ProtectedRoute>
+                            <Moods />
+                        </ProtectedRoute>
+                    } 
+                />
+                
+                {/* Redirect /mood to /moods-select */}
+                <Route path="/mood" element={<Navigate to="/moods-select" replace />} />
+                
+                {/* Individual Mood Pages */}
+                <Route 
+                    path="/mood/chill" 
+                    element={
+                        <ProtectedRoute>
+                            <ChillPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/mood/energetic" 
+                    element={
+                        <ProtectedRoute>
+                            <EnergeticPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/mood/focused" 
+                    element={
+                        <ProtectedRoute>
+                            <FocusedPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/mood/happy" 
+                    element={
+                        <ProtectedRoute>
+                            <HappyPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/mood/romantic" 
+                    element={
+                        <ProtectedRoute>
+                            <RomanticPage />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/mood/sad" 
+                    element={
+                        <ProtectedRoute>
+                            <SadPage />
+                        </ProtectedRoute>
+                    } 
+                />
 
-                    {/* Other Screens */}
-                    {/* CRITICAL FIX: Use a dynamic path for the Playlist Detail page */}
-                    <Route path="/playlist/:id" element={<PlaylistDetail />} /> 
-                    <Route path="/history" element={<History />} />
-                    <Route path="/profile" element={<Profile />} />
-                </Route>
+                {/* Other Protected Pages */}
+                <Route 
+                    path="/playlist/:id" 
+                    element={
+                        <ProtectedRoute>
+                            <PlaylistDetail />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/history" 
+                    element={
+                        <ProtectedRoute>
+                            <History />
+                        </ProtectedRoute>
+                    } 
+                />
+                <Route 
+                    path="/profile" 
+                    element={
+                        <ProtectedRoute>
+                            <Profile />
+                        </ProtectedRoute>
+                    } 
+                />
+
+                {/* 404 - Redirect to home */}
+                <Route path="*" element={<Navigate to="/" replace />} />
                 
             </Routes>
-            {/* 3. Global Player Component (placed outside Routes) */}
-            <SpotifyPlayer uri={currentUri} /> 
+
+            {/* Global Player Component (shown on all pages) */}
+            {currentUri && <SpotifyPlayer uri={currentUri} />}
         </Router>
     );
 }
 
 // -------------------------------------------------------------
-// 2. Main App (Provides Contexts)
+// Main App (Provides Contexts)
 // -------------------------------------------------------------
 function App() {
     return (
