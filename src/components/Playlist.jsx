@@ -1,12 +1,17 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 
-const PlaylistCard = ({ playlist }) => {
+const PlaylistCard = ({ playlist, bgColorVar, mood }) => {
     const navigate = useNavigate();
 
     const handleClick = () => {
         // When clicked, navigate to the specific playlist detail page
-        navigate(`/playlist/${playlist.id}`); 
+        navigate(`/playlist/${playlist.id}` , {
+            state : {
+                bgColorVar: bgColorVar,
+                mood: mood
+            }
+        }); 
     };
 
     return (

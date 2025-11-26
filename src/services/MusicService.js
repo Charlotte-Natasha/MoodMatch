@@ -5,6 +5,21 @@ import { getValidAccessToken } from './SpotifyAuth';
 const SPOTIFY_API_BASE = 'https://api.spotify.com/v1';
 
 // -------------------------------------------------------------------
+// WEB PLAYER DEVICE MANAGEMENT 
+// -------------------------------------------------------------------
+
+let webPlayerDeviceId = null;
+
+export const setWebPlayerDeviceId = (deviceId) => {
+  webPlayerDeviceId = deviceId;
+  console.log('Web player device ID set:', deviceId);
+};
+
+export const getWebPlayerDeviceId = () => {
+  return webPlayerDeviceId;
+};
+
+// -------------------------------------------------------------------
 // 1. FETCH PLAYLISTS BY MOOD
 // -------------------------------------------------------------------
 
@@ -112,6 +127,12 @@ export async function fetchPlaylistTracks(playlistId) {
 export async function play(uri, deviceId = null) {
     try {
         const token = await getValidAccessToken();
+
+        const finalDeviceId = deviceId || webPlayerDeviceId;
+
+        if (!finalDeviceId) {
+            throw new Error ('Web player not ready. Please wait a moment and try again')
+        }
 
         const endpoint = deviceId 
             ? `${SPOTIFY_API_BASE}/me/player/play?device_id=${deviceId}`
@@ -372,5 +393,40 @@ export async function getRecentlyPlayed(limitCount = 50) {
     } catch (error) {
         console.error('Error getting recently played:', error);
         return [];
+    }
+}
+
+/**
+ * Play track/playlist on web player device
+ */
+export async function playOnWebPlayer(uri, deviceId) {
+    try {
+        const token = await getValidAccessToken();
+
+        const endpoint = `${SPOTIFY_API_BASE}/me/player/play?device_id=${deviceId}`;
+
+        // Determine if it's a track or context (playlist/album)
+        const body = uri.includes('track')
+            ? { uris: [uri] }
+            : { context_uri: uri };
+
+        const response = await fetch(endpoint, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.ok && response.status !== 204) {
+            const error = await response.json();
+            throw new Error(error.error?.message || 'Playback failed');
+        }
+
+        return true;
+    } catch (error) {
+        console.error('Error playing on web player:', error);
+        throw error;
     }
 }

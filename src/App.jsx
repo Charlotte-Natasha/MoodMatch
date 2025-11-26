@@ -1,17 +1,17 @@
-import React from "react";
+import React, { useState, useEffect } from "react"; // ADD useState and useEffect here
 import {
   BrowserRouter as Router,
   Routes,
   Route,
   Navigate,
 } from "react-router-dom";
+import SpotifyWebPlayer from './components/SpotifyWebPlayer.jsx';
+import { getValidAccessToken } from './services/SpotifyAuth';
 import { isLoggedIn as isSpotifyConnected } from "./services/SpotifyAuth";
 
 // Contexts
-import { PlaybackProvider, usePlayback } from "./contexts/PlaybackContext.jsx";
-
-// Components
-import SpotifyPlayer from "./components/SpotifyPlayer.jsx";
+import { PlaybackProvider } from "./contexts/PlaybackContext.jsx";
+import { WebPlayerProvider } from "./contexts/WebPlayerContext.jsx";
 
 // Authentication Pages
 import SpotifyLoginPage from "./pages/SpotifyLogin.jsx";
@@ -34,7 +34,7 @@ import FocusedPage from "./components/MoodPage/Focused.jsx";
 import RomanticPage from "./components/MoodPage/Romantic.jsx";
 
 // -------------------------------------------------------------
-// Protected Route Component (Replaces PrivateRoute)
+// Protected Route Component
 // -------------------------------------------------------------
 function ProtectedRoute({ children }) {
   if (!isSpotifyConnected()) {
@@ -47,7 +47,23 @@ function ProtectedRoute({ children }) {
 // Content Wrapper (Handles Router and Global Player)
 // -------------------------------------------------------------
 function AppContent() {
-  const { currentUri } = usePlayback();
+  const [accessToken, setAccessToken] = useState(null);
+
+  // GET ACCESS TOKEN FOR WEB PLAYER
+  useEffect(() => {
+    const loadToken = async () => {
+      try {
+        const token = await getValidAccessToken();
+        setAccessToken(token);
+      } catch (err) {
+        console.error('Error loading token:', err);
+      }
+    };
+    
+    if (isSpotifyConnected()) {
+      loadToken();
+    }
+  }, []);
 
   return (
     <Router>
@@ -185,8 +201,8 @@ function AppContent() {
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* Global Player Component (shown on all pages) */}
-      {currentUri && <SpotifyPlayer uri={currentUri} />}
+      {/* REPLACED OLD PLAYER WITH WEB PLAYER */}
+    {accessToken && <SpotifyWebPlayer accessToken={accessToken} />}
     </Router>
   );
 }
@@ -196,9 +212,11 @@ function AppContent() {
 // -------------------------------------------------------------
 function App() {
   return (
-    <PlaybackProvider>
-      <AppContent />
-    </PlaybackProvider>
+    <WebPlayerProvider> 
+      <PlaybackProvider>
+        <AppContent />
+      </PlaybackProvider>
+    </WebPlayerProvider>
   );
 }
 

@@ -1,35 +1,24 @@
-import React, { useState } from 'react'; // ADD useState
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addFavorite, removeFavorite } from '../../services/FavoritesService';
 
-const MoodPage = ({ 
-    moodName, 
-    bgColorVar, 
-    moodImage,
-    loading,      
-    error,        
-    playlists     
-}) => {
+const MoodPage = ({ moodName, bgColorVar, moodImage, loading, error, playlists }) => {
     const navigate = useNavigate();
-    const [favorites, setFavorites] = useState({}); // ADD THIS LINE
-    
-    // Set background style using the variable
+    const [favorites, setFavorites] = useState({});
+
     const moodStyle = { backgroundColor: `var(${bgColorVar})` };
 
-    // Handler for clicking a playlist card
     const handlePlaylistClick = (playlistId) => {
         navigate(`/playlist/${playlistId}`, {
-            state: { 
-                bgColorVar: bgColorVar,
+            state: {
+                bgColorVar,
                 mood: moodName.toLowerCase()
             }
         });
     };
 
-    // Toggle favorite
     const handleToggleFavorite = async (playlist, e) => {
         e.stopPropagation();
-        
         try {
             if (favorites[playlist.id]) {
                 await removeFavorite(playlist.id);
@@ -51,7 +40,7 @@ const MoodPage = ({
         );
     }
 
-    const playlistCount = playlists ? playlists.length : 0;
+    const playlistCount = playlists?.length || 0;
 
     return (
         <div style={moodStyle} className="p-8 min-h-screen">
@@ -78,16 +67,14 @@ const MoodPage = ({
             )}
 
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                {playlists && playlists.map(playlist => (
+                {playlists?.map(playlist => (
                     <div 
                         key={playlist.id} 
                         onClick={() => handlePlaylistClick(playlist.id)} 
                         className="bg-white/10 p-4 rounded-lg cursor-pointer hover:bg-white/20 transition-colors relative group"
-                        // ADD 'relative group' above ^^^^
                     >
                         <img src={playlist.imageUrl} alt={playlist.name} className="w-full aspect-square object-cover rounded shadow-md" />
                         
-                        {/* HEART BUTTON */}
                         <button
                             onClick={(e) => handleToggleFavorite(playlist, e)}
                             className="absolute top-6 right-6 bg-black/60 hover:bg-black/80 p-2 rounded-full transition-all opacity-0 group-hover:opacity-100"

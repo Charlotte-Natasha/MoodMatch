@@ -6,10 +6,11 @@ import { getFirebaseHistory } from '../firebase/firebaseTracking';
 
 function History() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState('spotify'); // 'spotify' or 'firebase'
+  const [activeTab, setActiveTab] = useState('spotify');
   const [spotifyHistory, setSpotifyHistory] = useState([]);
   const [firebaseHistory, setFirebaseHistory] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     loadHistory();
@@ -18,24 +19,46 @@ function History() {
   const loadHistory = async () => {
     try {
       setLoading(true);
+      setError(null);
       
-      // Load both histories
+      console.log('Loading history...');
+      
+      // Load both histories with error handling
       const [spotify, firebase] = await Promise.all([
-        getRecentlyPlayed(50),
-        getFirebaseHistory(50)
+        getRecentlyPlayed(50).catch(err => {
+          console.error('Spotify history error:', err);
+          return [];
+        }),
+        getFirebaseHistory(50).catch(err => {
+          console.error('Firebase history error:', err);
+          return [];
+        })
       ]);
       
-      setSpotifyHistory(spotify);
-      setFirebaseHistory(firebase);
+      console.log('Spotify history:', spotify);
+      console.log('Firebase history:', firebase);
+      
+      setSpotifyHistory(spotify || []);
+      setFirebaseHistory(firebase || []);
+      
+      if ((!spotify || spotify.length === 0) && (!firebase || firebase.length === 0)) {
+        setError('No history data available. Make sure you have the correct Spotify permissions and are tracking plays.');
+      }
     } catch (err) {
       console.error('Error loading history:', err);
+      setError(`Error loading history: ${err.message}`);
     } finally {
       setLoading(false);
     }
   };
 
   const formatDate = (timestamp) => {
-    const date = new Date(timestamp);
+    if (!timestamp) return 'Unknown time';
+    
+    // Handle both Date objects and timestamp strings
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp);
+    if (isNaN(date.getTime())) return 'Invalid date';
+    
     const now = new Date();
     const diffMs = now - date;
     const diffMins = Math.floor(diffMs / 60000);
@@ -61,7 +84,20 @@ function History() {
         <h1 className="text-3xl font-semibold mr-auto pl-4">
           Listening History
         </h1>
+        <button
+          className="text-white text-sm px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 transition"
+          onClick={loadHistory}
+        >
+          Refresh
+        </button>
       </header>
+
+      {/* Error Display */}
+      {error && (
+        <div className="max-w-7xl mx-auto mb-6 bg-red-500/20 border border-red-500 rounded-xl p-4 backdrop-blur-md">
+          <p className="text-white">{error}</p>
+        </div>
+      )}
 
       {/* Tab Switcher */}
       <div className="max-w-7xl mx-auto mb-6">
@@ -113,11 +149,17 @@ function History() {
             <div className="bg-white/10 rounded-xl p-12 text-center backdrop-blur-md">
               <FaMusic className="w-16 h-16 mx-auto mb-4 text-white/40" />
               <h3 className="text-xl font-semibold mb-2">No history yet</h3>
-              <p className="text-white/60">
+              <p className="text-white/60 mb-4">
                 {activeTab === 'spotify' 
                   ? 'Start playing music on Spotify to see your history' 
                   : 'Play songs from mood pages to track your listening'}
               </p>
+              <button
+                onClick={() => console.log('Debug - Current data:', { spotifyHistory, firebaseHistory })}
+                className="text-sm px-4 py-2 bg-white/10 rounded-lg hover:bg-white/20 transition"
+              >
+                Debug: Log Data
+              </button>
             </div>
           ) : (
             <div className="space-y-3">
@@ -130,7 +172,7 @@ function History() {
                   {item.albumImage && (
                     <img
                       src={item.albumImage}
-                      alt={item.album}
+                      alt={item.album || 'Album art'}
                       className="w-16 h-16 rounded-lg object-cover shadow-lg"
                     />
                   )}
@@ -138,15 +180,14 @@ function History() {
                   {/* Track Info */}
                   <div className="flex-1 min-w-0">
                     <h3 className="text-white font-semibold truncate text-lg">
-                      {item.trackName}
+                      {item.trackName || 'Unknown Track'}
                     </h3>
-                    <p className="text-white/70 truncate">{item.artist}</p>
+                    <p className="text-white/70 truncate">{item.artist || 'Unknown Artist'}</p>
                     
                     {/* Mood Badge (only for Firebase history) */}
                     {activeTab === 'firebase' && item.mood && (
                       <span 
-                        className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold text-white"
-                        style={{ backgroundColor: `var(--color-mood-${item.mood})` }}
+                        className="inline-block mt-2 px-3 py-1 rounded-full text-xs font-semibold text-white bg-purple-600"
                       >
                         {item.mood.charAt(0).toUpperCase() + item.mood.slice(1)} Mood
                       </span>
