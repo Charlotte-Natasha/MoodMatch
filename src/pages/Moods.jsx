@@ -1,6 +1,6 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "../contexts/AuthContext.jsx";
+import { getCurrentUser } from "../services/SpotifyAuth";
 
 import happyImage from "../assets/Happy.png";
 import sadImage from "../assets/Sad.png";
@@ -11,35 +11,74 @@ import focusedImage from "../assets/Focused.png";
 
 const ProfileIcon = () => {
   const navigate = useNavigate();
-  const { currentUser } = useAuth();
+  const [spotifyUser, setSpotifyUser] = useState(null);
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const fetchSpotifyUser = async () => {
+      try {
+        const user = await getCurrentUser();
+        if (isMounted) {
+          setSpotifyUser(user);
+        }
+      } catch (error) {
+        console.error("Error fetching Spotify user:", error);
+      } finally {
+        if (isMounted) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    fetchSpotifyUser();
+
+    return () => {
+      isMounted = false;
+    };
+  }, []);
 
   const getInitials = (name) => {
-    if (!name) return "";
+    if (!name) return "U";
     const parts = name.trim().split(" ");
     if (parts.length === 1) return parts[0][0].toUpperCase();
-    return parts[0][0].toUpperCase() + parts[parts.length - 1][0].toUpperCase();
+    return (
+      parts[0][0].toUpperCase() +
+      parts[parts.length - 1][0].toUpperCase()
+    );
   };
+
+  // Loading state
+  if (isLoading) {
+    return (
+      <div
+        className="w-12 h-12 rounded-full bg-white/20 animate-pulse border-2 border-white/80 cursor-wait"
+        title="Loading profile..."
+      ></div>
+    );
+  }
+
+  // Get display info
+  const displayName = spotifyUser?.display_name || "User";
+  const imageUrl = spotifyUser?.images?.[0]?.url;
 
   return (
     <div
-      className="cursor-pointer"
+      className="cursor-pointer relative z-50"
       onClick={() => navigate("/profile")}
       title="Go to Profile"
     >
-      {currentUser ? (
-        currentUser.photoURL ? (
-          <img
-            src={currentUser.photoURL}
-            alt="Profile"
-            className="w-15 h-15 rounded-full object-cover"
-          />
-        ) : (
-          <div className="w-15 h-15 rounded-full bg-pink-600 flex items-center justify-center text-white text-sm font-bold">
-            {getInitials(currentUser.displayName || currentUser.email)}
-          </div>
-        )
+      {imageUrl ? (
+        <img
+          src={imageUrl}
+          alt="Profile"
+          className="w-12 h-12 rounded-full object-cover border-2 border-white/80 bg-white/10 shadow-lg"
+        />
       ) : (
-        <div className="text-2xl opacity-80">👤</div>
+        <div className="w-12 h-12 rounded-full bg-linear-to-br from-purple-600 to-pink-600 flex items-center justify-center text-white text-lg font-bold border-2 border-white/80 shadow-lg">
+          {getInitials(displayName)}
+        </div>
       )}
     </div>
   );
