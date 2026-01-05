@@ -38,7 +38,7 @@ import RomanticPage from "./components/MoodPage/Romantic.jsx";
 // -------------------------------------------------------------
 function ProtectedRoute({ children }) {
   if (!isSpotifyConnected()) {
-    return <Navigate to="/spotify-login" replace />;
+    return <Navigate to="/callback"/>;
   }
   return children;
 }

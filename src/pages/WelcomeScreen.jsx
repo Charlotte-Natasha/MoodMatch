@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import Logo from "../assets/logo2.png"
 
 const WelcomeScreen = () => {
   const [loggedInState, setLoggedInState] = useState(null);
@@ -87,7 +88,7 @@ const WelcomeScreen = () => {
           <div className="relative group">
             <div className="absolute inset-0 bg-linear-to-r from-purple-500 to-pink-500 rounded-2xl blur-2xl opacity-30"></div>
             <img
-              src="https://placehold.co/400x400/8B5CF6/FFFFFF?text=MusicArt"
+              src={Logo}
               alt="MoodMatch Music Art"
               className="relative w-full h-auto rounded-2xl shadow-2xl transform group-hover:scale-105 transition-transform duration-300"
             />
