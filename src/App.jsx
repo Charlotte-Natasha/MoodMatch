@@ -83,7 +83,7 @@ function AppContent() {
         />
 
         <Route
-          path="/spotify-login"
+          path="/callback"
           element={
             isSpotifyConnected() ? (
               <Navigate to="/moods-select" replace />

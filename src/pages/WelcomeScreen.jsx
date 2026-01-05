@@ -24,7 +24,7 @@ const WelcomeScreen = () => {
     if (loggedInState) {
       console.log("Navigate to /moods-select");
     } else {
-      console.log("Navigate to /spotify-login");
+      console.log("Navigate to /callback");
     }
   };
 
