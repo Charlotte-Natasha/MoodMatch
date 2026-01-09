@@ -185,13 +185,16 @@ export async function getValidAccessToken() {
   const token = localStorage.getItem("spotify_access_token");
   const expiry = localStorage.getItem("spotify_token_expiry");
 
-  // Check if token exists and is still valid (with 60s buffer)
   if (token && expiry && Date.now() < parseInt(expiry) - 60000) {
     return token;
   }
 
-  // Token expired, try to refresh
-  return await refreshAccessToken();
+  try {
+    return await refreshAccessToken();
+  } catch {
+    logout();               // clear broken tokens
+    return null;            // IMPORTANT: do NOT throw
+  }
 }
 
 /**

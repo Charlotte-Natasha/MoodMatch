@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react"; // ADD useState and useEffect here
+import React, { useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Routes,
@@ -6,18 +6,15 @@ import {
   Navigate,
 } from "react-router-dom";
 import SpotifyWebPlayer from './components/SpotifyWebPlayer.jsx';
-import { getValidAccessToken } from './services/SpotifyAuth';
-import { isLoggedIn as isSpotifyConnected } from "./services/SpotifyAuth";
+import { getValidAccessToken, isLoggedIn as isSpotifyConnected } from "./services/SpotifyAuth";
 
 // Contexts
 import { PlaybackProvider } from "./contexts/PlaybackContext.jsx";
 import { WebPlayerProvider } from "./contexts/WebPlayerContext.jsx";
 
-// Authentication Pages
+// Pages
 import SpotifyLoginPage from "./pages/SpotifyLogin.jsx";
 import SpotifyCallback from "./pages/SpotifyCallback.jsx";
-
-// Main Pages
 import WelcomeScreen from "./pages/WelcomeScreen.jsx";
 import Moods from "./pages/Moods.jsx";
 import History from "./components/History.jsx";
@@ -38,28 +35,28 @@ import RomanticPage from "./components/MoodPage/Romantic.jsx";
 // -------------------------------------------------------------
 function ProtectedRoute({ children }) {
   if (!isSpotifyConnected()) {
-    return <Navigate to="/callback"/>;
+    return <Navigate to="/login" replace />; // ✅ Redirect to login instead of /callback
   }
   return children;
 }
 
 // -------------------------------------------------------------
-// Content Wrapper (Handles Router and Global Player)
+// App Content
 // -------------------------------------------------------------
 function AppContent() {
   const [accessToken, setAccessToken] = useState(null);
 
-  // GET ACCESS TOKEN FOR WEB PLAYER
+  // Load token for Web Player
   useEffect(() => {
     const loadToken = async () => {
       try {
         const token = await getValidAccessToken();
-        setAccessToken(token);
+        if (token) setAccessToken(token);
       } catch (err) {
-        console.error('Error loading token:', err);
+        console.error("Error loading token:", err);
       }
     };
-    
+
     if (isSpotifyConnected()) {
       loadToken();
     }
@@ -69,7 +66,7 @@ function AppContent() {
     <Router>
       <Routes>
         {/* ========================================= */}
-        {/* 📢 PUBLIC ROUTES (No Spotify login)      */}
+        {/* PUBLIC ROUTES */}
         {/* ========================================= */}
         <Route
           path="/"
@@ -82,25 +79,12 @@ function AppContent() {
           }
         />
 
-        <Route
-          path="/callback"
-          element={
-            isSpotifyConnected() ? (
-              <Navigate to="/moods-select" replace />
-            ) : (
-              <SpotifyLoginPage />
-            )
-          }
-        />
-
-        {/* Spotify OAuth Callback */}
+        <Route path="/login" element={<SpotifyLoginPage />} />
         <Route path="/callback" element={<SpotifyCallback />} />
 
         {/* ========================================= */}
-        {/* 🔒 PROTECTED ROUTES (Spotify login req)  */}
+        {/* PROTECTED ROUTES */}
         {/* ========================================= */}
-
-        {/* Mood Selection */}
         <Route
           path="/moods-select"
           element={
@@ -113,7 +97,7 @@ function AppContent() {
         {/* Redirect /mood to /moods-select */}
         <Route path="/mood" element={<Navigate to="/moods-select" replace />} />
 
-        {/* Individual Mood Pages */}
+        {/* Mood Pages */}
         <Route
           path="/mood/chill"
           element={
@@ -197,22 +181,22 @@ function AppContent() {
           }
         />
 
-        {/* 404 - Redirect to home */}
+        {/* 404 */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
 
-      {/* REPLACED OLD PLAYER WITH WEB PLAYER */}
-    {accessToken && <SpotifyWebPlayer accessToken={accessToken} />}
+      {/* Spotify Web Player */}
+      {accessToken && <SpotifyWebPlayer accessToken={accessToken} />}
     </Router>
   );
 }
 
 // -------------------------------------------------------------
-// Main App (Provides Contexts)
+// Main App (Contexts)
 // -------------------------------------------------------------
 function App() {
   return (
-    <WebPlayerProvider> 
+    <WebPlayerProvider>
       <PlaybackProvider>
         <AppContent />
       </PlaybackProvider>

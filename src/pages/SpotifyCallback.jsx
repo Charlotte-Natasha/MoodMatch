@@ -1,8 +1,7 @@
-// SpotifyCallback.jsx - Handles the redirect from Spotify
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { handleCallback } from "../services/SpotifyAuth";
+import WelcomeScreen from "./WelcomeScreen.jsx";
 
 function SpotifyCallback() {
   const navigate = useNavigate();
@@ -10,33 +9,32 @@ function SpotifyCallback() {
 
   useEffect(() => {
     const processCallback = async () => {
-      // Get the authorization code from URL
+
+      // Extract code and error from URL
       const params = new URLSearchParams(window.location.search);
       const code = params.get("code");
-      const error = params.get("error");
+      const authError = params.get("error");
 
-      if (error) {
-        setError(`Authentication failed: ${error}`);
-        setTimeout(() => navigate("/"), 3000);
+      if (authError) {
+        setError(`Authentication failed: ${authError}`);
+        setTimeout(() => navigate("/", { replace: true }), 3000);
         return;
       }
 
       if (!code) {
         setError("No authorization code found");
-        setTimeout(() => navigate("/"), 3000);
+        setTimeout(() => navigate("/", { replace: true }), 3000);
         return;
       }
 
       try {
-        // Exchange code for access token
         await handleCallback(code);
-
-        // Success! Redirect to main app
-        navigate("/");
+        // success → redirect to moods
+        navigate("/moods-select", { replace: true });
       } catch (err) {
         console.error("Callback error:", err);
         setError(err.message);
-        setTimeout(() => navigate("/"), 3000);
+        setTimeout(() => navigate("/", { replace: true }), 3000);
       }
     };
 
@@ -54,14 +52,8 @@ function SpotifyCallback() {
     );
   }
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-900">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-green-500 mx-auto mb-4"></div>
-        <p className="text-white text-xl">Connecting to Spotify...</p>
-      </div>
-    </div>
-  );
+  // While processing, show your WelcomeScreen loader
+  return <WelcomeScreen redirecting={true} />;
 }
 
 export default SpotifyCallback;
